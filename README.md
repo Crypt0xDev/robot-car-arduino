@@ -1,154 +1,304 @@
-# Robot Car Arduino
+# 🤖 Robot Car Arduino
 
-Autonomous 2WD Robot Platform Based on Arduino UNO
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/Platform-Arduino%20UNO-red.svg)](https://www.arduino.cc/)
+[![Language](https://img.shields.io/badge/Language-C%2B%2B-yellow.svg)](https://en.wikipedia.org/wiki/C%2B%2B)
+[![Status](https://img.shields.io/badge/Status-Active%20Development-green.svg)](#-roadmap)
 
-## Overview
+**An autonomous 2WD robot platform for embedded systems experimentation, featuring modular architecture, intelligent navigation, and real-time telemetry.**
 
-Robot Car Arduino es una plataforma robótica móvil diseñada para la experimentación con sistemas embebidos, navegación autónoma y control remoto.
+<p align="center">
+  <img src="assets/images/robot-preview.png" alt="Robot Car Arduino">
+</p>
 
-El proyecto implementa una arquitectura modular que separa la lógica de negocio, los controladores de hardware y las funcionalidades del robot, permitiendo una mayor mantenibilidad, escalabilidad y reutilización del código.
+---
 
-## Features
+## 📋 Table of Contents
 
-### Navigation
+- [🤖 Robot Car Arduino](#-robot-car-arduino)
+  - [📋 Table of Contents](#-table-of-contents)
+  - [✨ Overview](#-overview)
+  - [🎯 Key Features](#-key-features)
+  - [⚙️ Hardware](#️-hardware)
+  - [🏗️ Architecture](#️-architecture)
+    - [🧠 Core Layer](#-core-layer)
+    - [🔌 Drivers Layer](#-drivers-layer)
+    - [🎮 Features Layer](#-features-layer)
+  - [📁 Repository Structure](#-repository-structure)
+  - [📚 Documentation](#-documentation)
+  - [🗺️ Roadmap](#️-roadmap)
+  - [🤝 Contributing](#-contributing)
+    - [📋 Requerimientos mínimos](#-requerimientos-mínimos)
+  - [📄 License](#-license)
+  - [📞 Contact \& Support](#-contact--support)
+    - [⭐ Si este proyecto te resultó útil, considera darle una estrella!](#-si-este-proyecto-te-resultó-útil-considera-darle-una-estrella)
 
-* Obstacle Avoidance
-* Autonomous Navigation
-* Environment Scanning
+---
 
-### Tracking
+## ✨ Overview
 
-* Line Following
-* Path Correction
+Robot Car Arduino es una plataforma robótica móvil de código abierto diseñada para exploración, aprendizaje y prototipado rápido con sistemas embebidos.
 
-### Remote Control
+El proyecto implementa una **arquitectura modular y escalable** que separa claramente la lógica de negocio, los controladores de hardware y las funcionalidades de alto nivel del robot, permitiendo:
 
-* Bluetooth Communication
-* Manual Driving Mode
+- 🔧 **Mantenimiento simplificado**
+- 📈 **Escalabilidad** a nuevas funcionalidades
+- 🔄 **Reutilización de código**
+- 📚 **Aprendizaje estructurado**
 
-### Monitoring
+---
 
-* Telemetry System
-* Event Tracking
+## 🎯 Key Features
 
-## Hardware
+| Feature | Status | Description |
+|---------|--------|-------------|
+| **Manual Control** | ✅ Implemented | Control remoto vía Bluetooth desde aplicación móvil |
+| **Obstacle Avoidance** | ✅ Implemented | Detección y evasión autónoma de obstáculos |
+| **Line Following** | ✅ Implemented | Seguimiento de línea con sensores IR y corrección automática |
+| **Autonomous Navigation** | ✅ Implemented | Navegación completamente autónoma con toma de decisiones |
+| **Telemetry System** | ✅ Implemented | Monitoreo en tiempo real de estado, velocidad y sensores |
+| **Bluetooth Communication** | ✅ Implemented | Control y telemetría inalámbrica |
+| **WiFi Connectivity** | 🔄 Planned | Expansión futura con ESP32 |
 
-* Arduino UNO
-* L298N Motor Driver
-* HC-SR04 Ultrasonic Sensor
-* SG90 Servo Motor
-* IR Line Tracking Sensors
-* DC Gear Motors
-* Bluetooth Module
+---
 
-## Software Architecture
+## ⚙️ Hardware
 
-```text
-Core
-├── RobotController
-├── StateMachine
-└── EventManager
+<details>
+<summary><b>Componentes principales (click para expandir)</b></summary>
 
-Drivers
-├── MotorDriver
-├── UltrasonicDriver
-├── ServoDriver
-└── EncoderDriver
+| Component | Model | Purpose |
+|-----------|-------|---------|
+| **Microcontroller** | Arduino UNO | Cerebro principal del sistema |
+| **Motor Driver** | L298N | Control de motores DC |
+| **Distance Sensor** | HC-SR04 | Detección de obstáculos ultrasónica |
+| **Servo Motor** | SG90 | Escaneo del entorno |
+| **Line Sensors** | IR Sensors | Seguimiento de línea |
+| **Motors** | DC Gear Motors | Movimiento de ruedas (2WD) |
+| **Wireless** | Bluetooth Module | Comunicación remota |
+| **Power** | Batería 5V/6V | Alimentación del sistema |
 
-Features
-├── ObstacleAvoidance
-├── LineFollower
-├── ManualControl
-└── AutonomousMode
+</details>
 
-Communication
-├── Bluetooth
-├── WiFi (Future)
-└── Telemetry
+---
 
-Config
+## 🏗️ Architecture
+
+Robot Car Arduino utiliza una **arquitectura modular de 5 capas** para máxima flexibilidad y reutilización:
+
+<details>
+<summary><b>Estructura de módulos (click para expandir)</b></summary>
+
+```
+📦 Robot Car Arduino
+│
+├── 🧠 Core (Lógica Central)
+│   ├── RobotController      → Coordinador principal
+│   ├── StateMachine         → Gestión de estados
+│   └── EventManager         → Sistema de eventos interno
+│
+├── 🔌 Drivers (Acceso a Hardware)
+│   ├── MotorDriver          → Control de motores DC
+│   ├── UltrasonicDriver     → Sensor de distancia HC-SR04
+│   ├── ServoDriver          → Control de servomotor SG90
+│   └── EncoderDriver        → Lectura de encoders
+│
+├── 🎮 Features (Funcionalidades)
+│   ├── ObstacleAvoidance    → Evasión autónoma de obstáculos
+│   ├── LineFollower         → Seguimiento de línea automático
+│   ├── ManualControl        → Control remoto manual
+│   └── AutonomousMode       → Navegación completamente autónoma
+│
+├── 📡 Communication (Comunicación Externa)
+│   ├── Bluetooth            → Comunicación inalámbrica actual
+│   ├── WiFi (Future)        → Expansión futura con ESP32
+│   └── Telemetry            → Sistema de monitoreo
+│
+└── ⚙️ Config (Configuración)
+    ├── Pin Definitions      → Mapeo de pines
+    ├── System Constants     → Constantes del sistema
+    ├── Sensor Thresholds    → Umbrales de sensores
+    └── Navigation Params    → Parámetros de navegación
 ```
 
-### Core
+### 🧠 Core Layer
 
-Central coordination layer responsible for robot control, state management and event handling.
+| Component | Responsibility |
+|-----------|----------------|
+| **RobotController** | Inicializa componentes, coordina ciclo principal |
+| **StateMachine** | Gestiona: Idle, Manual, Obstacle Avoidance, Line Following, Autonomous |
+| **EventManager** | Propaga eventos: ObstacleDetected, LineLost, BluetoothConnected, ModeChanged |
 
-### Drivers
+### 🔌 Drivers Layer
 
-Hardware abstraction layer responsible for sensors, actuators and low-level device control.
+Abstracción de hardware con interfaces consistentes:
 
-### Features
+- **MotorDriver**: Forward, Backward, Left, Right, Stop, Speed Control
+- **UltrasonicDriver**: Medición de distancia, Detección de obstáculos
+- **ServoDriver**: Movimiento angular, Escaneo del entorno
+- **EncoderDriver**: Velocidad, Distancia, Retroalimentación
 
-High-level robot capabilities such as obstacle avoidance, line following and autonomous navigation.
+### 🎮 Features Layer
 
-### Communication
+Comportamientos de alto nivel que utilizan la capa de Drivers:
 
-Wireless communication and telemetry services.
+- **ObstacleAvoidance**: Escaneo frontal → Detección → Selección de ruta
+- **LineFollower**: Lectura IR → Corrección automática de trayectoria
+- **ManualControl**: Movimiento manual, Control de velocidad, Comandos remotos
+- **AutonomousMode**: Navegación automática, Integración de sensores, Toma de decisiones
 
-### Config
+</details>
 
-Global configuration, constants and hardware settings.
+---
 
-## Project Structure
+## 📁 Repository Structure
 
-```text
-├── docs/
-├── assets/
-├── src/
-├── tests/
-├── schematics/
-└── README.md
+```
+├── 🧠 Core/                    # Lógica central del robot
+│   ├── RobotController/
+│   ├── StateMachine/
+│   └── EventManager/
+│
+├── 🔌 Drivers/                 # Capa de acceso a hardware
+│   ├── MotorDriver/
+│   ├── UltrasonicDriver/
+│   ├── ServoDriver/
+│   └── EncoderDriver/
+│
+├── 🎮 Features/                # Funcionalidades de alto nivel
+│   ├── ObstacleAvoidance/
+│   ├── LineFollower/
+│   ├── ManualControl/
+│   └── AutonomousMode/
+│
+├── 📡 Communication/           # Sistemas de comunicación
+│   ├── Bluetooth/
+│   ├── Telemetry/
+│   └── WiFi/
+│
+├── ⚙️ Config/                  # Configuración global
+│   ├── PinDefinitions.h
+│   ├── Constants.h
+│   └── Thresholds.h
+│
+├── 📚 docs/                    # Documentación completa
+│   ├── architecture.md         # Detalles de arquitectura
+│   ├── hardware.md             # Especificaciones de hardware
+│   ├── wiring.md               # Diagramas de conexión
+│   ├── testing.md              # Protocolo de testing
+│   ├── structure.md            # Detalles de estructura
+│   └── roadmap.md              # Plan de desarrollo
+│
+├── 🧪 tests/                   # Casos de prueba
+│   └── README.md
+│
+├── 📊 schematics/              # Esquemas eléctricos
+│   └── README.md
+│
+├── 🖼️ assets/                  # Recursos multimedia
+│   ├── images/                 # Fotografías y diagramas
+│   ├── videos/                 # Demostraciones
+│   └── audio/                  # Sonidos y alarmas
+│
+├── 📄 README.md                # Este archivo
+├── 📋 CHANGELOG.md             # Historial de cambios
+├── 🤝 CONTRIBUTING.md          # Guía de contribución
+├── 📜 LICENSE                  # MIT License
+└── .gitignore
 ```
 
-For a complete explanation of the project structure, see:
+---
 
-```text
-docs/structure.md
+## 📚 Documentation
+
+Documentación completa disponible en el directorio `docs/`:
+
+| Document | Purpose |
+|----------|---------|
+| [**architecture.md**](docs/architecture.md) | 🏗️ Detalles técnicos de la arquitectura y diseño |
+| [**hardware.md**](docs/hardware.md) | ⚙️ Especificaciones de componentes y características |
+| [**wiring.md**](docs/wiring.md) | 🔌 Diagramas de conexión y mapeo de pines |
+| [**testing.md**](docs/testing.md) | 🧪 Protocolo de testing y validación |
+| [**structure.md**](docs/structure.md) | 📁 Guía detallada de la estructura del proyecto |
+| [**roadmap.md**](docs/roadmap.md) | 🗺️ Plan de desarrollo y futuras características |
+
+---
+
+## 🗺️ Roadmap
+
+```
+v1.0 ✅
+├── Platform base de Arduino UNO
+├── Control Bluetooth
+└── Detección de obstáculos
+
+v1.1 ✅
+├── Sistema de evasión de obstáculos
+└── Escaneo con servo
+
+v1.2 ✅
+└── Sistema de seguimiento de línea
+
+v2.0 🔄 (Próximo)
+├── Arquitectura mejorada
+├── Gestión avanzada de estados
+└── Sistema de telemetría completo
+
+v3.0 🔮 (Futuro)
+├── Migración a ESP32
+├── Conectividad WiFi
+└── Dashboard web
+
+v4.0 🚀 (Visión)
+├── Integración de cámara
+├── Visión por computadora
+└── Navegación inteligente
 ```
 
-## Current Capabilities
+---
 
-* Manual Control
-* Obstacle Detection
-* Obstacle Avoidance
-* Line Following
-* Autonomous Mode
+## 🤝 Contributing
 
-## Roadmap
+¡Las contribuciones son bienvenidas! Para contribuir al proyecto:
 
-### v1.0
+1. **Fork** el repositorio
+2. **Crea una rama** (`git checkout -b feature/AmazingFeature`)
+3. **Commitea tus cambios** (`git commit -m 'Add some AmazingFeature'`)
+4. **Push a la rama** (`git push origin feature/AmazingFeature`)
+5. **Abre un Pull Request**
 
-* Basic Robot Platform
-* Bluetooth Control
-* Obstacle Detection
+Por favor lee [CONTRIBUTING.md](CONTRIBUTING.md) para más detalles sobre nuestro código de conducta y proceso de contribución.
 
-### v1.1
+### 📋 Requerimientos mínimos
 
-* Obstacle Avoidance System
-* Servo Scanning
+- Arduino IDE 1.8.x o superior
+- Conocimiento básico de C/C++
+- Familiaridad con embedded systems
 
-### v1.2
+---
 
-* Line Following System
+## 📄 License
 
-### v2.0
+Este proyecto está licenciado bajo la **MIT License** - ver archivo [LICENSE](LICENSE) para más detalles.
 
-* Improved Architecture
-* Advanced State Management
-* Telemetry
+**Autores :**
+  - Alexis Noe Gonzales Perez
+  - Favio Rafael Lopez Jimenes
+  - Victor danei Majuan Vustamnet
+---
 
-### v3.0
+## 📞 Contact & Support
 
-* ESP32 Migration
-* WiFi Connectivity
-* Web Dashboard
+- 📧 Para reportar bugs o sugerir mejoras: [Abre un issue](../../issues)
+- 💬 Para discusiones generales: [Discussions](../../discussions)
+- 🐛 Encuentra un bug? [Reporta aquí](../../issues/new?labels=bug)
 
-### v4.0
+---
 
-* Camera Integration
-* Computer Vision
-* Smart Navigation
+<div align="center">
 
-## License
+### ⭐ Si este proyecto te resultó útil, considera darle una estrella!
 
-MIT License
+Construido con ❤️ para la comunidad de robótica embebida
+
+</div>
