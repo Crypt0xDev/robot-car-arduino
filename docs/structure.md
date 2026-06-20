@@ -309,7 +309,7 @@ Robot Motion
 ### Line Following Flow
 
 ```
-LineFollower (QTR-8A input)
+LineFollower (IR sensor array, A0-A5)
   ↓ (sensor array values)
 Compute error (line position)
   ↓

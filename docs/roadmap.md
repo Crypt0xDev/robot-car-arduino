@@ -12,90 +12,74 @@ Create a production-grade autonomous robot platform for education, research, and
 
 ## 📈 Version History & Roadmap
 
-### ✅ v1.0 - Foundation (Completed)
+### 📋 v1.0 - Foundation (Planeado)
 
-**Release Date:** 2026-Q1
-**Focus:** Basic platform establishment
+**Focus:** Plataforma base
 
-**Completed Features:**
-- [x] Arduino UNO R3 integration
-- [x] Dual DC motor control
-- [x] L298N motor driver
-- [x] Power distribution system
-- [x] Basic obstacle detection (HC-SR04)
+**Features objetivo:**
+- [ ] Control de 2 motores DC con L298N
+- [ ] Distribución de energía
+- [ ] Detección básica de obstáculos (HC-SR04)
+- [ ] Control manual por Bluetooth (HC-05)
 
 **Documentation:**
 - [x] README.md
-- [x] Hardware specifications
-- [x] Wiring guide
-- [x] Initial architecture
+- [x] Especificaciones de hardware
+- [x] Guía de cableado
+- [x] Arquitectura inicial
 
-**Status:** ✅ Stable
-
----
-
-### ✅ v1.1 - Smart Obstacle Avoidance (Completed)
-
-**Release Date:** 2026-Q2
-**Focus:** Autonomous obstacle navigation
-
-**Completed Features:**
-- [x] Servo motor integration (SG90)
-- [x] HC-SR04 scanning mode
-- [x] Obstacle detection algorithm
-- [x] Autonomous avoidance logic
-- [x] Path selection algorithm
-
-**Implementation:**
-```
-Ultrasonic Scanning:
-  0° (Front) → Left sector scan → Right sector scan
-
-Decision Logic:
-  IF obstacle < 20cm: Avoid
-  ELSE IF left clear: Turn left
-  ELSE IF right clear: Turn right
-  ELSE: Reverse
-```
-
-**Testing Results:**
-- Detection accuracy: 98%
-- Average response time: 200ms
-- Collision rate: < 2%
-
-**Status:** ✅ Production-ready
+**Status:** 🔄 En desarrollo (sketch de motores listo, resto pendiente)
 
 ---
 
-### ✅ v1.2 - Line Following System (Completed)
+### 📋 v1.1 - Evasión de obstáculos (Planeado)
 
-**Release Date:** 2026-Q3
-**Focus:** Infrared line tracking
+**Focus:** Navegación autónoma alrededor de obstáculos
 
-**Completed Features:**
-- [x] QTR-8A sensor array integration
-- [x] IR calibration procedures
-- [x] PID-based line tracking
-- [x] Multi-line support (intersections)
-- [x] Edge detection
+**Features objetivo:**
+- [ ] Integración del servo (SG90)
+- [ ] Escaneo con HC-SR04
+- [ ] Algoritmo de detección de obstáculos
+- [ ] Lógica de evasión autónoma
+- [ ] Selección de ruta
 
-**Implementation:**
+**Implementación (diseño previsto):**
 ```
-Line Following Algorithm:
-  1. Read 8 sensor values
-  2. Calculate weighted position
-  3. Compute error from center
-  4. Apply PID controller
-  5. Adjust motor speeds
-  6. Repeat @ 100Hz
+Escaneo ultrasónico:
+  0° (frente) → escaneo izquierda → escaneo derecha
+
+Lógica de decisión:
+  SI obstáculo < 20cm: evadir
+  SI izquierda libre: girar izquierda
+  SI derecha libre: girar derecha
+  SI no: retroceder
 ```
 
-**Performance Metrics:**
-- Tracking error: < 1cm
-- Maximum line speed: 30cm/s
-- Line loss recovery: 95%
+**Status:** 📋 Planeado (sin implementar)
 
-**Status:** ✅ Optimized
+---
+
+### 📋 v1.2 - Seguidor de línea (Planeado)
+
+**Focus:** Seguimiento de línea por infrarrojo
+
+**Features objetivo:**
+- [ ] Integración del QTR-8A (5 canales en A0-A4)
+- [ ] Procedimiento de calibración IR
+- [ ] Seguimiento con controlador PID
+- [ ] Detección de pérdida de línea
+
+**Implementación (diseño previsto):**
+```
+Algoritmo de seguimiento:
+  1. Leer los valores de los 5 canales del QTR-8A
+  2. Calcular posición ponderada de la línea
+  3. Calcular error respecto al centro
+  4. Aplicar controlador PID
+  5. Ajustar velocidades de motor
+```
+
+**Status:** 📋 Planeado (sin implementar)
 
 ---
 
@@ -253,13 +237,15 @@ v4.0 Platform:
 
 ### v2.0 Targets
 
-| Metric | Target | Current |
-|--------|--------|---------|
-| **Obstacle Detection** | < 100ms | 200ms |
-| **Line Tracking Speed** | 50cm/s | 30cm/s |
-| **Battery Runtime** | 2 hours | 45 min |
-| **System Reliability** | 99% uptime | 95% |
-| **Response Latency** | < 50ms | 100ms |
+| Metric | Target | Actual |
+|--------|--------|--------|
+| **Obstacle Detection** | < 100ms | — (sin medir) |
+| **Line Tracking Speed** | 50cm/s | — (sin medir) |
+| **Battery Runtime** | 2 hours | — (sin medir) |
+| **System Reliability** | 99% uptime | — (sin medir) |
+| **Response Latency** | < 50ms | — (sin medir) |
+
+> Los valores "Actual" se llenarán cuando exista código y se midan de verdad.
 
 ### v3.0 Targets
 
@@ -279,12 +265,12 @@ v4.0 Platform:
 
 ## 🎯 Priority Features
 
-### Critical (MVP for v2.0)
-1. ✅ Reliable motor control
-2. ✅ Accurate obstacle detection
-3. ✅ Stable line following
-4. [ ] Event system implementation
-5. [ ] Performance optimization
+### Critical (MVP)
+1. [ ] Control de motores confiable (sketch de prueba listo, falta integrar)
+2. [ ] Detección de obstáculos
+3. [ ] Seguimiento de línea estable
+4. [ ] Control manual por Bluetooth
+5. [ ] Optimización de rendimiento
 
 ### Important (v2.0)
 6. [ ] Error recovery mechanisms
@@ -370,22 +356,13 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for details.
 ## 📋 Milestone Schedule
 
 ```
-2026 Q1: v1.0 Foundation        ✅ Complete
-2026 Q2: v1.1 Obstacle Avoid    ✅ Complete
-2026 Q3: v1.2 Line Following    ✅ Complete
-2026 Q4: v2.0 Enhancement       🔄 Current
-         - Architecture
-         - State Machine
-         - Event System
-         - Advanced Telemetry
-
-2027 Q1: v3.0 Connectivity      🔮 Planned
-         - ESP32 Integration
-         - WiFi
-         - Cloud
-
-2027 Q2: v3.0 Release           📋 Scheduled
-2027 Q3: v4.0 Vision            🚀 Vision
+v0.1  Estructura + prueba de motores   🔄 En curso
+v1.0  Plataforma base + Bluetooth       📋 Planeado
+v1.1  Evasión de obstáculos             📋 Planeado
+v1.2  Seguimiento de línea (IR)         📋 Planeado
+v2.0  Refactor a módulos (si hace falta)📋 Planeado
+v3.0  ESP32 + WiFi                       🔮 Futuro
+v4.0  Visión / cámara                    🚀 Visión
 ```
 
 ---

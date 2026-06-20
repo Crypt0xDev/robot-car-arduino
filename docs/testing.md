@@ -33,13 +33,14 @@ Before any testing, verify:
 ```cpp
 #include <Arduino.h>
 
-// Motor pins (from PinDefinitions.h)
-const int MOTOR_LEFT_PWM = D2;
-const int MOTOR_LEFT_DIR1 = D4;
-const int MOTOR_LEFT_DIR2 = D5;
-const int MOTOR_RIGHT_PWM = D3;
-const int MOTOR_RIGHT_DIR1 = D2;
-const int MOTOR_RIGHT_DIR2 = D3;
+// Motor pins (ver wiring.md) - sin conflictos. En Arduino los pines son
+// numeros, no "D2"; se escribe 5, 7, etc.
+const int MOTOR_LEFT_PWM  = 5;   // ENA
+const int MOTOR_LEFT_DIR1 = 7;   // IN1
+const int MOTOR_LEFT_DIR2 = 8;   // IN2
+const int MOTOR_RIGHT_PWM  = 6;  // ENB
+const int MOTOR_RIGHT_DIR1 = 9;  // IN3
+const int MOTOR_RIGHT_DIR2 = 10; // IN4
 ```
 
 **Test: Forward Motion**
@@ -132,8 +133,8 @@ void test_motor_speed_control() {
 
 **Setup:**
 ```cpp
-const int TRIGGER_PIN = 7;  // D7
-const int ECHO_PIN = 8;     // D8
+const int TRIGGER_PIN = 2;  // D2
+const int ECHO_PIN = 4;     // D4
 
 void setup() {
   pinMode(TRIGGER_PIN, OUTPUT);
@@ -211,7 +212,7 @@ void test_obstacle_detection() {
 ```cpp
 #include <Servo.h>
 
-const int SERVO_PIN = 6;
+const int SERVO_PIN = 3;  // D3 (PWM)
 Servo myServo;
 
 void setup() {
@@ -268,16 +269,17 @@ void test_servo_sweep() {
 
 ### 4. Line Sensor Testing
 
-**Objective:** Verify QTR-8A IR sensor array
+**Objective:** Verificar el array de línea QTR-8A
 
 **Setup:**
 ```cpp
-const int QTR_PINS[] = {A0, A1, A2, A3, A4, A5};
-const int NUM_SENSORS = 6;
+// QTR-8A tiene 8 canales; el UNO solo tiene A0-A5, usamos 5 (A0-A4)
+const int IR_PINS[] = {A0, A1, A2, A3, A4};
+const int NUM_SENSORS = 5;
 
 void setup() {
   for (int i = 0; i < NUM_SENSORS; i++) {
-    pinMode(QTR_PINS[i], INPUT);
+    pinMode(IR_PINS[i], INPUT);
   }
   Serial.begin(9600);
 }
@@ -288,7 +290,7 @@ void setup() {
 void test_sensor_readout() {
   for (int i = 0; i < 10; i++) {
     for (int j = 0; j < NUM_SENSORS; j++) {
-      int value = analogRead(QTR_PINS[j]);
+      int value = analogRead(IR_PINS[j]);
       Serial.print(value);
       Serial.print("\t");
     }
@@ -300,8 +302,8 @@ void test_sensor_readout() {
 
 **Expected Output:**
 ```
-Black line:    0     0     50    100   50    0
-White floor:   1023  1023  950   900   950   1023
+Black line:    0     50    100   50    0
+White floor:   1023  950   900   950   1023
 ```
 
 **Test: Line Detection**
@@ -311,7 +313,7 @@ int getLinePosition() {
   int weightedSum = 0;
 
   for (int i = 0; i < NUM_SENSORS; i++) {
-    int value = analogRead(QTR_PINS[i]);
+    int value = analogRead(IR_PINS[i]);
     int weight = i - (NUM_SENSORS / 2);
 
     if (value < 500) { // Black line threshold
@@ -484,14 +486,14 @@ void calibrate_motor_speed() {
 1. **White Calibration**
    ```cpp
    for (int i = 0; i < NUM_SENSORS; i++) {
-     white_values[i] = analogRead(QTR_PINS[i]);
+     white_values[i] = analogRead(IR_PINS[i]);
    }
    ```
 
 2. **Black Calibration**
    ```cpp
    for (int i = 0; i < NUM_SENSORS; i++) {
-     black_values[i] = analogRead(QTR_PINS[i]);
+     black_values[i] = analogRead(IR_PINS[i]);
    }
    ```
 

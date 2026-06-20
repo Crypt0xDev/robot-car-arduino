@@ -1,6 +1,91 @@
 # Getting Started
 
-Quick start guide to build and deploy Robot Car Arduino.
+Guía para armar y poner en marcha el Robot Car (kit "Carro Robot 2WD
+Multifunción"). Sigue las secciones en orden: armado → cableado → carga de
+sketches.
+
+> Lista completa de componentes del kit en [hardware.md](hardware.md).
+> Mapa de pines oficial en [wiring.md](wiring.md).
+
+---
+
+## 🔧 Armado del kit (paso a paso)
+
+### Paso A — Montaje mecánico del chasis
+
+1. **Motores a las ruedas:** fija los 2 motorreductores al chasis con los
+   sujetadores y tornillos. Conecta cada motor a una rueda.
+2. **Rueda loca:** atornilla la rueda universal en la parte delantera (da
+   apoyo; no tiene motor).
+3. **Caja de batería:** monta la caja de pilas y el interruptor de encendido
+   en el chasis. NO pongas las pilas todavía.
+4. **Arduino + L298N:** fija el Arduino UNO y el driver L298N sobre el chasis
+   (cinta doble cara, tornillos o separadores).
+5. **Sensores:**
+   - El **QTR-8A** va **debajo del chasis**, cerca del suelo, mirando hacia
+     abajo (para ver la línea).
+   - El **HC-SR04** va montado sobre el **servo SG-90**, al frente, mirando
+     hacia adelante (para escanear obstáculos).
+
+### Paso B — Conexiones eléctricas
+
+Sigue exactamente el mapa de [wiring.md](wiring.md). Resumen:
+
+| Módulo | Pines Arduino |
+|--------|---------------|
+| L298N (motores) | ENA=D5, ENB=D6, IN1=D7, IN2=D8, IN3=D9, IN4=D10 |
+| HC-SR04 | TRIG=D2, ECHO=D4 |
+| Servo SG-90 | señal=D3 |
+| Bluetooth HC-05 | TX→D11, RX→D12 (con divisor de voltaje en RX) |
+| QTR-8A | 5 canales → A0, A1, A2, A3, A4 |
+
+⚠️ **Reglas de oro del cableado:**
+- **GND común**: la batería, el **LM2596**, el L298N y el Arduino deben
+  compartir tierra.
+- La batería **nunca** va directo al L298N: pasa primero por el **LM2596**
+  (7.5V), y esa salida alimenta el VS del L298N.
+- **Quita los jumpers de ENA y ENB** del L298N; si no, no hay control de
+  velocidad (van a tope fijo).
+- El pin **RX del HC-05 es de 3.3V**: usa un divisor de voltaje (1kΩ + 2kΩ)
+  desde D12, o el módulo puede dañarse.
+- El **servo** da picos de corriente: si el Arduino se reinicia al moverlo,
+  aliméntalo de un 5V con más corriente (no solo del L298N).
+
+### Paso C — Batería y encendido
+
+⚠️ La batería es **4× 18650 Li-ion (4.2V) en serie = 16.8V**. Ese voltaje es
+demasiado alto para los motores (3-6V) y el Arduino. **Necesitas un convertidor
+reductor LM2596** ajustado a ~7.5V entre la batería y el robot.
+Ver el esquema completo en [wiring.md → Power Distribution](wiring.md#-power-distribution).
+
+1. Carga las 18650 y colócalas en el portapilas (en serie).
+2. Ajusta el **LM2596 a 7.5V con un multímetro** ANTES de conectar el robot.
+3. Deja el interruptor **apagado** hasta terminar de revisar el cableado.
+4. Primer encendido: **levanta el robot sobre un soporte** (ruedas al aire)
+   antes de probar los motores.
+
+> ⚠️ Las 18650 mal usadas son peligrosas: no las cortocircuites, no inviertas
+> la polaridad y usa un cargador adecuado.
+
+---
+
+## ▶️ Carga de sketches (en orden)
+
+El código está en [`firmware/`](../firmware/README.md). **Prueba cada sketch
+antes de pasar al siguiente** — si los motores no andan bien en el paso 1, los
+modos autónomos tampoco funcionarán.
+
+1. `01_motor_test` — confirma que los motores giran bien (y en el sentido correcto).
+2. `02_ultrasonic_test` — confirma que mide distancia (Monitor Serie a 9600).
+3. `03_servo_test` — confirma que el servo apunta izq/centro/der.
+4. `04_obstacle_avoidance` — evasión autónoma (los tres juntos).
+5. `05_bluetooth_control` — control manual desde el celular.
+6. `06_line_follower` — seguidor de línea (calibra el umbral primero).
+7. `robot_car` — **firmware integrado**: todos los modos, cambias con `0/1/2/3`
+   por Bluetooth.
+
+Para subir cualquiera: ábrelo en el Arduino IDE → `Herramientas → Placa →
+Arduino Uno` → selecciona el puerto → **Upload (→)**.
 
 ---
 
@@ -35,15 +120,14 @@ Before starting, ensure you have:
 
 ### Step 2: Install Board Package
 
-1. Open **Preferences** (File → Preferences)
-2. Add to "Additional Boards Manager URLs":
-   ```
-   https://dl.espressif.com/dl/package_esp32_index.json
-   ```
-3. Open **Boards Manager** (Tools → Board → Boards Manager)
-4. Search for "Arduino AVR Boards"
-5. Click Install
-6. Restart Arduino IDE
+1. Open **Boards Manager** (Tools → Board → Boards Manager)
+2. Search for "Arduino AVR Boards"
+3. Click Install (normalmente ya viene preinstalado en el IDE)
+4. Restart Arduino IDE
+
+> Nota: el paquete "Arduino AVR Boards" (para el UNO) ya viene integrado en el
+> Arduino IDE; no necesitas agregar ninguna URL extra. La URL de ESP32 solo
+> aplica cuando migres a esa placa (roadmap v3).
 
 ### Step 3: Select Board & Port
 
@@ -137,13 +221,14 @@ See [wiring.md](wiring.md) for detailed connection guide.
 Simple forward/backward test:
 
 ```cpp
-// Motor pins
-const int MOTOR_LEFT_PWM = 2;
-const int MOTOR_LEFT_DIR1 = 4;
-const int MOTOR_LEFT_DIR2 = 5;
-const int MOTOR_RIGHT_PWM = 3;
-const int MOTOR_RIGHT_DIR1 = 2;
-const int MOTOR_RIGHT_DIR2 = 3;
+// Motor pins (L298N) - cada pin se usa una sola vez (sin conflictos)
+// PWM validos en UNO: 3, 5, 6, 9, 10, 11 -> ENA/ENB van en 5 y 6.
+const int MOTOR_LEFT_PWM  = 5;  // ENA
+const int MOTOR_LEFT_DIR1 = 7;  // IN1
+const int MOTOR_LEFT_DIR2 = 8;  // IN2
+const int MOTOR_RIGHT_PWM  = 6;  // ENB
+const int MOTOR_RIGHT_DIR1 = 9;  // IN3
+const int MOTOR_RIGHT_DIR2 = 10; // IN4
 
 void setup() {
   pinMode(MOTOR_LEFT_PWM, OUTPUT);
@@ -262,27 +347,28 @@ Examples:
 Edit `Config/PinDefinitions.h`:
 
 ```cpp
-// Motor Control
-#define MOTOR_LEFT_PWM    2
-#define MOTOR_LEFT_DIR1   4
-#define MOTOR_LEFT_DIR2   5
-#define MOTOR_RIGHT_PWM   3
-#define MOTOR_RIGHT_DIR1  2
-#define MOTOR_RIGHT_DIR2  3
+// Motor Control (L298N) - sin pines repetidos
+#define MOTOR_LEFT_PWM    5   // ENA (PWM)
+#define MOTOR_LEFT_DIR1   7   // IN1
+#define MOTOR_LEFT_DIR2   8   // IN2
+#define MOTOR_RIGHT_PWM   6   // ENB (PWM)
+#define MOTOR_RIGHT_DIR1  9   // IN3
+#define MOTOR_RIGHT_DIR2  10  // IN4
 
-// Sensors
-#define ULTRASONIC_TRIG   7
-#define ULTRASONIC_ECHO   8
-#define SERVO_PIN         6
+// Sensors (libres tras asignar motores en 5-10)
+#define ULTRASONIC_TRIG   2
+#define ULTRASONIC_ECHO   4
+#define SERVO_PIN         3   // PWM libre
 
 // Communication
 #define HC05_RX           11
 #define HC05_TX           12
 
-// Line Sensors
-#define QTR_SENSOR_1      A0
-#define QTR_SENSOR_2      A1
-// ... etc
+// Line Sensors (UNO solo tiene A0-A5 => maximo 6 sensores analogicos)
+#define IR_SENSOR_1       A0
+#define IR_SENSOR_2       A1
+#define IR_SENSOR_3       A2
+// A3-A5 disponibles si se usan mas sensores
 ```
 
 ### Adjust Speed Constants

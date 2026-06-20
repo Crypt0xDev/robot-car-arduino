@@ -22,7 +22,7 @@ Robot Car Arduino implements a **layered, modular architecture** designed for sc
 │           [EventManager][Telemetry]             │
 ├─────────────────────────────────────────────────┤
 │         Drivers (Hardware Abstraction)           │  ← Sensor/Actuator Control
-│ [Motors][Ultrasonic][Servo][Encoders][LineIR]  │
+│  [Motors][Ultrasonic][Servo][LineIR sensors]   │
 ├─────────────────────────────────────────────────┤
 │      Configuration & Constants (Global)         │  ← Settings & Parameters
 │  [PinDefinitions][Constants][Thresholds]        │
@@ -181,9 +181,9 @@ WiFi (Future)
 **Purpose:** Centralized parameter management
 
 ```cpp
-// PinDefinitions.h - Hardware pin mapping
-#define MOTOR_LEFT_PWM    2
-#define MOTOR_LEFT_DIR1   4
+// PinDefinitions.h - Hardware pin mapping (ver wiring.md)
+#define MOTOR_LEFT_PWM    5   // ENA (PWM)
+#define MOTOR_LEFT_DIR1   7   // IN1
 
 // Constants.h - System parameters
 #define MAX_MOTOR_SPEED   255
@@ -298,9 +298,9 @@ Hardware Actuation
 ### Line Following Flow (Detailed)
 
 ```
-QTR-8A Sensor Array
+IR Sensor Array (3-5 sensores, A0-A5 del UNO)
     │
-    ├─ Sensor 1-8 (analog values)
+    ├─ Sensores (valores analogicos)
     │
     ▼
 LineFollower::calculatePosition()

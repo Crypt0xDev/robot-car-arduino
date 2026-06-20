@@ -4,7 +4,39 @@ Complete hardware documentation for Robot Car Arduino platform.
 
 ## 📋 Overview
 
-Robot Car Arduino es una plataforma de 2 ruedas (2WD) basada en Arduino UNO R3 con capacidades autónomas completas. El hardware se ha seleccionado por confiabilidad, disponibilidad y costo-efectividad.
+Robot Car Arduino es una plataforma de 2 ruedas (2WD) basada en Arduino UNO R3.
+El hardware corresponde al kit "Carro Robot 2WD Multifunción" (todo incluido).
+
+### 📦 Contenido del kit (lista de materiales real)
+
+| Cant. | Componente | Uso en el proyecto |
+|-------|-----------|--------------------|
+| 1 | Arduino UNO R3 + cable USB | Microcontrolador |
+| 1 | Chasis del coche | Estructura |
+| 2 | Motorreductor (1:48) | Tracción 2WD |
+| 2 | Codificador de velocidad (encoder) | Odometría (opcional, ver nota) |
+| 1 | Driver L298N | Control de motores |
+| 1 | Módulo Bluetooth HC-05 | Control por celular |
+| 1 | Sensor de línea QTR-8A (8 canales) | Seguidor de línea (se usan 5-6) |
+| 1 | Ultrasonido HC-SR04 | Detección de obstáculos |
+| 1 | Servomotor SG-90 | Mueve el HC-SR04 para escanear |
+| 1 | Caja de batería + interruptor | Alojamiento de las 18650 |
+| 4 | Batería 18650 Li-ion 4.2V (en serie = 16.8V) | Alimentación (requiere buck, ver abajo) |
+| 1 | Convertidor reductor LM2596 *(comprar aparte)* | Baja 16.8V → 7.5V para motores/Arduino |
+| 1 | Rueda universal (loca) | Apoyo delantero |
+| 1 | Bus de 20 cables dupont M-H | Conexiones |
+| 12 / 8 | Tornillos / tuercas | Montaje |
+
+> **Falta comprar:** un convertidor reductor **LM2596**. La batería (4x 18650
+> en serie) entrega **16.8V**, que es demasiado para los motores (3-6V) y el
+> Arduino; el LM2596 la baja a ~7.5V. Ver
+> [wiring.md → Power Distribution](wiring.md#-power-distribution).
+
+> **Nota sobre los encoders:** vienen incluidos, pero los 3 modos básicos
+> (manual, evasión, línea) no los necesitan. Conectarlos requiere pines de
+> interrupción (D2/D3) que ya usan el ultrasonido y el servo, así que en el
+> firmware actual quedan **sin conectar**. Son una mejora futura para medir
+> velocidad/distancia recorrida.
 
 ---
 
@@ -26,13 +58,15 @@ Robot Car Arduino es una plataforma de 2 ruedas (2WD) basada en Arduino UNO R3 c
 **Used Pins:**
 | Pin | Function | Module |
 |-----|----------|--------|
-| D2, D3 | Motor PWM Speed | L298N |
-| D4, D5 | Motor Direction | L298N |
-| D6 | Servo Control | SG90 |
-| D7, D8 | Ultrasonic Trigger/Echo | HC-SR04 |
-| D9, D10 | Encoder Inputs | Encoders |
+| D2 | Ultrasonic Trigger | HC-SR04 |
+| D3 | Servo Control (PWM) | SG90 |
+| D4 | Ultrasonic Echo | HC-SR04 |
+| D5, D6 | Motor PWM Speed (ENA/ENB) | L298N |
+| D7-D10 | Motor Direction (IN1-IN4) | L298N |
 | D11, D12 | Serial Communication | HC-05 |
-| A0-A5 | QTR-8A Line Sensors | QTR-8A |
+| A0-A4 | Line Sensors | QTR-8A (5 de 8 canales) |
+
+> Mapa de pines completo y oficial en [wiring.md](wiring.md).
 
 ---
 
@@ -151,30 +185,31 @@ Robot Car Arduino es una plataforma de 2 ruedas (2WD) basada en Arduino UNO R3 c
 
 ---
 
-## 📍 Line Sensor Array: QTR-8A
+## 📍 Line Sensor Array: QTR-8A (del kit)
 
-**Purpose:** Infrared line detection for line-following mode
+**Purpose:** Detección de línea por infrarrojo para el modo seguidor de línea.
 
 **Specifications:**
-- **Sensors:** 8 infrared reflectance sensors
+- **Sensors:** array QTR-8A de 8 canales infrarrojos de reflexión
 - **Operating Voltage:** 5V
-- **Operating Current:** 40mA (typical)
-- **Detection Range:** 3-40mm (optimal 24mm)
-- **Output:** 8 analog channels (A0-A5, then D0-D1)
-- **Sensor Spacing:** 8.13mm between sensors
+- **Output:** 8 salidas analógicas
 
-**Pinout:**
-| QTR-8A Pin | Function | Arduino Pin |
-|------------|----------|------------|
+> ⚠️ El UNO solo tiene 6 entradas analógicas (A0-A5). Por eso del QTR-8A se
+> conectan **5-6 de sus 8 canales** (en este proyecto: 5 canales a A0-A4). Con
+> 5 sensores el seguimiento de línea funciona perfectamente; no se necesitan los 8.
+
+**Conexión usada (5 canales):**
+| QTR-8A | Función | Arduino Pin |
+|--------|---------|-------------|
 | VCC | Power | 5V |
 | GND | Ground | GND |
-| OUT1-OUT8 | Analog Output | A0-A5, D0-D1 |
-| CTRL | (Optional) Optional | NC |
+| OUT (5 canales repartidos) | Salida analógica | A0, A1, A2, A3, A4 |
+| Canales restantes | sin usar | — |
 
-**Sensor Array Layout:**
+**Layout (5 canales activos, de izquierda a derecha):**
 ```
-   [S1][S2][S3][S4][S5][S6][S7][S8]
-   <--- Robot Front --->
+   [A0][A1][A2][A3][A4]
+   <--- Frente del robot --->
 ```
 
 **Operation:**
@@ -230,12 +265,14 @@ Robot Car Arduino es una plataforma de 2 ruedas (2WD) basada en Arduino UNO R3 c
 
 | Aspect | Specification |
 |--------|---------------|
-| **Type** | Lithium-Ion / NiMH rechargeable |
-| **Nominal Voltage** | 5V (external) / 6V (nominal) |
-| **Capacity** | 2000mAh - 3000mAh recommended |
-| **Peak Current** | 2.5A (motor peak) |
-| **Expected Runtime** | 30-45 minutes (continuous operation) |
-| **Charging Time** | 2-3 hours (standard charging) |
+| **Type** | 4x 18650 Li-ion 4.2V en serie (4S) |
+| **Voltage** | 16.8V cargadas / 14.8V nominal / ~12V descargadas |
+| **Reductor obligatorio** | LM2596 buck → ~7.5V (ver Power Distribution en wiring.md) |
+| **Peak Current** | 2.5A (pico de motores) |
+| **Charging** | Cargador específico para 18650 (no cargar en serie sin BMS) |
+
+> ⚠️ Los 16.8V NUNCA van directo a motores (3-6V) ni al Arduino. Siempre pasan
+> primero por el LM2596.
 
 ### Power Budget
 
@@ -249,15 +286,15 @@ Robot Car Arduino es una plataforma de 2 ruedas (2WD) basada en Arduino UNO R3 c
 | HC-SR04 (Active) | 5V | 15mA | During measurement |
 | HC-05 | 5V | 30mA | Active communication |
 | SG90 | 5V | 5-10mA | Servo holding |
-| QTR-8A | 5V | 40mA | All LEDs on |
+| QTR-8A | 5V | ~40mA | Todos los LEDs encendidos |
 | **Total Peak** | - | **~400mA** | All components active |
 
-### Recommended Battery
+### Batería usada
 
-- **Type:** 5000mAh Power Bank or
-- **Capacity:** 2200mAh 18650 Li-ion (3S configuration)
-- **Continuous:** 500mA-1A recommended
-- **Peak Draw:** Up to 2.5A supported
+- **Configuración:** 4x 18650 Li-ion en serie (4S = 16.8V)
+- **Reductor:** LM2596 ajustado a ~7.5V entre batería y robot (obligatorio)
+- **Capacidad típica:** 2000-3000mAh por celda
+- **Pico soportado:** hasta ~2.5A (motores)
 
 ---
 

@@ -50,15 +50,21 @@ El proyecto implementa una **arquitectura modular y escalable** que separa clara
 
 ## 🎯 Key Features
 
+> **Estado actual:** código funcional disponible en
+> [`firmware/`](firmware/README.md), con sketches probados por separado. Cada
+> uno se sube al Arduino UNO de forma independiente. Aún falta integrarlos en un
+> único firmware con selección de modo; por eso varias features están "listas
+> como sketch" pero no combinadas todavía.
+
 | Feature | Status | Description |
 |---------|--------|-------------|
-| **Manual Control** | ✅ Implemented | Control remoto vía Bluetooth desde aplicación móvil |
-| **Obstacle Avoidance** | ✅ Implemented | Detección y evasión autónoma de obstáculos |
-| **Line Following** | ✅ Implemented | Seguimiento de línea con sensores IR y corrección automática |
-| **Autonomous Navigation** | ✅ Implemented | Navegación completamente autónoma con toma de decisiones |
-| **Telemetry System** | ✅ Implemented | Monitoreo en tiempo real de estado, velocidad y sensores |
-| **Bluetooth Communication** | ✅ Implemented | Control y telemetría inalámbrica |
-| **WiFi Connectivity** | 🔄 Planned | Expansión futura con ESP32 |
+| **Motor Control** | ✅ Sketch listo | Movimiento 2WD vía L298N ([01](firmware/01_motor_test/01_motor_test.ino)) |
+| **Obstacle Avoidance** | ✅ Sketch listo | Escaneo con servo + evasión autónoma ([04](firmware/04_obstacle_avoidance/04_obstacle_avoidance.ino)) |
+| **Manual Control (Bluetooth)** | ✅ Sketch listo | Control remoto vía HC-05 ([05](firmware/05_bluetooth_control/05_bluetooth_control.ino)) |
+| **Line Following** | ✅ Sketch listo | Seguimiento de línea IR con control proporcional ([06](firmware/06_line_follower/06_line_follower.ino)) |
+| **Firmware integrado (multi-modo)** | ✅ Sketch listo | Máquina de estados + cambio de modo por Bluetooth ([robot_car](firmware/robot_car/robot_car.ino)) |
+| **Telemetry System** | 🔄 Planned | Monitoreo en tiempo real por Bluetooth |
+| **WiFi Connectivity** | 🔮 Future | Expansión futura con ESP32 |
 
 ---
 
@@ -73,10 +79,11 @@ El proyecto implementa una **arquitectura modular y escalable** que separa clara
 | **Motor Driver** | L298N | Control de motores DC |
 | **Distance Sensor** | HC-SR04 | Detección de obstáculos ultrasónica |
 | **Servo Motor** | SG90 | Escaneo del entorno |
-| **Line Sensors** | IR Sensors | Seguimiento de línea |
+| **Line Sensors** | QTR-8A (8 canales, se usan 5) | Seguimiento de línea |
+| **Encoders** | 2x codificador de velocidad | Odometría (opcional) |
 | **Motors** | DC Gear Motors | Movimiento de ruedas (2WD) |
 | **Wireless** | Bluetooth Module | Comunicación remota |
-| **Power** | Batería 5V/6V | Alimentación del sistema |
+| **Power** | 4x 18650 (16.8V) + reductor LM2596 a 7.5V | Alimentación del sistema |
 
 </details>
 
@@ -221,28 +228,32 @@ Documentación completa disponible en el directorio `docs/`:
 | [**testing.md**](docs/testing.md) | 🧪 Protocolo de testing y validación |
 | [**structure.md**](docs/structure.md) | 📁 Guía detallada de la estructura del proyecto |
 | [**roadmap.md**](docs/roadmap.md) | 🗺️ Plan de desarrollo y futuras características |
+| [**manual-cableado.md**](docs/manual-cableado.md) | 🛠️ Manual de instalación del cableado paso a paso |
+| [**diagramas.md**](docs/diagramas.md) | 🔌 Diagramas de energía, pines y tabla de conexiones |
+| [**app-control.md**](docs/app-control.md) | 📱 App de control sin código (MIT App Inventor) |
+| [**app-flutter.md**](docs/app-flutter.md) | 💻 App de control en código (Flutter + VS Code → APK) |
 
 ---
 
 ## 🗺️ Roadmap
 
 ```
-v1.0 ✅
+v0.1 🔄 (En curso)
+├── Estructura del repositorio y documentación  ✅
+├── Sketch de prueba de motores (L298N)         ✅
+└── Control básico de movimiento 2WD            🔄
+
+v1.0 🔜 (Siguiente)
 ├── Platform base de Arduino UNO
-├── Control Bluetooth
-└── Detección de obstáculos
+├── Control Bluetooth (HC-05)
+└── Detección de obstáculos (HC-SR04)
 
-v1.1 ✅
+v1.1 📋 (Planeado)
 ├── Sistema de evasión de obstáculos
-└── Escaneo con servo
+└── Escaneo con servo (SG90)
 
-v1.2 ✅
-└── Sistema de seguimiento de línea
-
-v2.0 🔄 (Próximo)
-├── Arquitectura mejorada
-├── Gestión avanzada de estados
-└── Sistema de telemetría completo
+v1.2 📋 (Planeado)
+└── Sistema de seguimiento de línea (QTR-8A)
 
 v3.0 🔮 (Futuro)
 ├── Migración a ESP32
