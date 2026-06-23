@@ -14,7 +14,6 @@ El hardware corresponde al kit "Carro Robot 2WD Multifunción" (todo incluido).
 | 1 | Arduino UNO R3 + cable USB | Microcontrolador |
 | 1 | Chasis del coche | Estructura |
 | 2 | Motorreductor (1:48) | Tracción 2WD |
-| 2 | Codificador de velocidad (encoder) | Odometría (opcional, ver nota) |
 | 1 | Driver L298N | Control de motores |
 | 1 | Módulo Bluetooth HC-05 | Control por celular |
 | 1 | Sensor de línea QTR-8A (8 canales) | Seguidor de línea (se usan 5-6) |
@@ -32,11 +31,9 @@ El hardware corresponde al kit "Carro Robot 2WD Multifunción" (todo incluido).
 > Arduino; el LM2596 la baja a ~7.5V. Ver
 > [wiring.md → Power Distribution](wiring.md#-power-distribution).
 
-> **Nota sobre los encoders:** vienen incluidos, pero los 3 modos básicos
-> (manual, evasión, línea) no los necesitan. Conectarlos requiere pines de
-> interrupción (D2/D3) que ya usan el ultrasonido y el servo, así que en el
-> firmware actual quedan **sin conectar**. Son una mejora futura para medir
-> velocidad/distancia recorrida.
+> **Nota:** este proyecto **no usa encoders**. Los 3 modos (manual, evasión,
+> línea) no los necesitan. Si en el futuro quisieras medir velocidad/distancia
+> recorrida, se podrían agregar, pero no forman parte de este armado.
 
 ---
 
@@ -241,21 +238,11 @@ El hardware corresponde al kit "Carro Robot 2WD Multifunción" (todo incluido).
 
 ---
 
-## 📊 Encoders (Optional)
+## 📊 Encoders — no se usan
 
-**Purpose:** Odometry and velocity feedback
-
-**Specifications:**
-- **Type:** Rotary encoders (integrated with gear motors)
-- **Pulses per Revolution:** ~20 PPR
-- **Output:** Digital pulse stream
-- **Arduino Pins:** D9, D10 (interrupt capable)
-
-**Usage:**
-- Distance traveled calculation
-- Speed measurement
-- Motor synchronization
-- Straight line navigation feedback
+Este proyecto **no incluye encoders**. La medición de velocidad/distancia por
+odometría queda como posible mejora futura, pero no forma parte de este armado
+ni del firmware actual.
 
 ---
 

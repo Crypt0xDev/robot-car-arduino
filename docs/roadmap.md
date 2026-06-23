@@ -369,7 +369,7 @@ v4.0  Visión / cámara                    🚀 Visión
 
 ## 🔗 Related Documentation
 
-- [Architecture Details](architecture.md)
-- [Hardware Specifications](hardware.md)
-- [Testing Procedures](testing.md)
-- [Contributing Guidelines](../CONTRIBUTING.md)
+- [Hardware](hardware.md)
+- [Manual de cableado](manual-cableado.md)
+- [Pruebas](testing.md)
+- [Contributing](../CONTRIBUTING.md)

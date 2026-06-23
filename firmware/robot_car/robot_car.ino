@@ -1,3 +1,5 @@
+// RoboCar UNSM - firmware 2WD. Control por Bluetooth: idle/manual/evasion/linea.
+
 #include <Servo.h>
 #include <SoftwareSerial.h>
 
@@ -11,7 +13,9 @@ const int NUM_SENSORES = 5;
 const int SENSORES[NUM_SENSORES] = {A0, A1, A2, A3, A4};
 
 // ---- Parametros ----
-const int DISTANCIA_SEGURA_CM = 20;
+// Distancia de frenado dinamica: crece con la velocidad (frena antes si va rapido).
+const int DIST_BASE_CM = 18;
+const int DIST_FACTOR = 6;
 const int ANG_DERECHA = 30, ANG_CENTRO = 90, ANG_IZQUIERDA = 150;
 const unsigned long TIMEOUT_US = 25000;
 const int UMBRAL_LINEA = 500;      // CALIBRAR con tu pista
@@ -20,25 +24,19 @@ const float KP = 18.0;
 const int SIN_LINEA = 9999;
 
 // Arranque suave: la velocidad sube por escalones en vez de saltar de golpe.
-// Asi se reduce el pico de corriente del arranque (protege motores y el buck
-// LM2596 de 3A). Sube/baja RAMPA_PASO unidades de PWM cada RAMPA_MS ms.
 const int RAMPA_PASO = 8;
 const int RAMPA_MS = 12;
 
-// Failsafe del modo MANUAL: si no llega ningun comando en este tiempo,
-// el robot se detiene solo (evita que siga andando si se corta el Bluetooth).
-// La app reenvia el comando de movimiento mientras se mantiene presionado,
-// asi que mientras haya conexion el robot no se detiene.
+// Failsafe: si en modo manual deja de llegar movimiento, el robot frena solo.
 const unsigned long FAILSAFE_MS = 600;
 unsigned long ultimoComandoMs = 0;
 
 // ---- Estado ----
 enum Modo { IDLE, MANUAL, EVASION, LINEA };
 Modo modo = IDLE;
-int velocidad = 150;               // usada en modo MANUAL
+int velocidad = 150;  // velocidad actual (manual y evasion); ajustable con +/- y V
 
 // Velocidad con signo aplicada AHORA a cada motor (+ adelante, - atras).
-// Se usa para rampar suavemente desde el valor actual hasta el objetivo.
 int velIzqActual = 0;
 int velDerActual = 0;
 
@@ -57,6 +55,7 @@ void setup() {
   Serial.begin(9600);
   bluetooth.begin(9600);
   Serial.println("Firmware integrado listo. 0=stop 1=manual 2=evasion 3=linea");
+  bluetooth.println("OK:ROBOT LISTO");  // telemetria: aviso de arranque
 
   detener();
 }
@@ -82,7 +81,6 @@ void loop() {
 
 // ---- Comandos ----
 // Estado para leer el comando de velocidad "V<numero>" (ej. "V180\n").
-// Llega caracter por caracter, asi que acumulamos los digitos.
 bool leyendoVelocidad = false;
 String numeroVelocidad = "";
 
@@ -90,8 +88,6 @@ void procesarComando(char c) {
   // Si estamos leyendo el numero de "V...", acumular digitos.
   if (leyendoVelocidad) {
     if (c >= '0' && c <= '9') {
-      // Tope de 3 digitos: el valor maximo util es 255, y evita que un
-      // flujo sin terminador haga crecer el String sin limite (RAM del UNO).
       if (numeroVelocidad.length() < 3) numeroVelocidad += c;
       return;
     }
@@ -99,6 +95,7 @@ void procesarComando(char c) {
     if (numeroVelocidad.length() > 0) {
       velocidad = constrain(numeroVelocidad.toInt(), 0, 255);
       Serial.print("VEL="); Serial.println(velocidad);
+      bluetooth.print("OK:VEL="); bluetooth.println(velocidad);  // telemetria
     }
     leyendoVelocidad = false;
     numeroVelocidad = "";
@@ -113,11 +110,15 @@ void procesarComando(char c) {
       numeroVelocidad = "";
       break;
 
-    // Cambio de modo
-    case '0': modo = IDLE;    detener(); Serial.println("IDLE");    break;
-    case '1': modo = MANUAL;  detener(); Serial.println("MANUAL");  break;
-    case '2': modo = EVASION;            Serial.println("EVASION"); break;
+    // Cambio de modo (responde por Bluetooth = telemetria para la app)
+    case '0': modo = IDLE;    detener(); Serial.println("IDLE");
+              bluetooth.println("OK:IDLE");    break;
+    case '1': modo = MANUAL;  detener(); Serial.println("MANUAL");
+              bluetooth.println("OK:MANUAL");  break;
+    case '2': modo = EVASION;            Serial.println("EVASION");
+              bluetooth.println("OK:EVASION"); break;
     case '3': modo = LINEA;              Serial.println("LINEA");
+              bluetooth.println("OK:LINEA");
               adelante(VELOCIDAD_BASE);  // arranque suave hasta la velocidad base
               break;
 
@@ -135,11 +136,14 @@ void procesarComando(char c) {
 
 // ---- Modo EVASION (del paso 4) ----
 void pasoEvasion() {
+  // Distancia de frenado segun la velocidad actual: a mas rapido, frena antes.
+  int distSegura = DIST_BASE_CM + velocidad / DIST_FACTOR;
+
   long frente = medirDistanciaCm();
-  if (frente >= 0 && frente < DISTANCIA_SEGURA_CM) {
+  if (frente >= 0 && frente < distSegura) {
     detener();
     delay(200);
-    atras(150);
+    atras(velocidad);
     delay(400);
     detener();
     delay(200);
@@ -149,13 +153,13 @@ void pasoEvasion() {
     servo.write(ANG_CENTRO);
     delay(300);
 
-    if (despejeMayor(izq, der)) girarIzquierda(150);
-    else                        girarDerecha(150);
+    if (despejeMayor(izq, der)) girarIzquierda(velocidad);
+    else                        girarDerecha(velocidad);
     delay(400);
     detener();
     delay(150);
   } else {
-    adelante(150);
+    adelante(velocidad);
   }
 }
 
@@ -182,9 +186,7 @@ void pasoLinea() {
   int velIzq = constrain(VELOCIDAD_BASE + correccion, 0, 255);
   int velDer = constrain(VELOCIDAD_BASE - correccion, 0, 255);
 
-  // En linea las correcciones son pequenas y deben ser inmediatas (sin rampa),
-  // pero mantenemos el estado sincronizado para que las transiciones de modo
-  // sigan siendo suaves. El arranque suave ya se hizo al entrar al modo.
+  // Correcciones chicas: se aplican directo, sin rampa.
   velIzqActual = velIzq;
   velDerActual = velDer;
   aplicarMotor(velIzqActual, ENA, IN1, IN2);
@@ -217,8 +219,6 @@ long medirDistanciaCm() {
 }
 
 // ---- Movimiento con arranque suave (compartido por todos los modos) ----
-// Las velocidades llevan signo: + adelante, - atras. Al cambiar de sentido
-// la rampa pasa por 0, asi que tambien frena suave antes de invertir.
 void adelante(int v)       { rampaHacia(v,  v);  }
 void atras(int v)          { rampaHacia(-v, -v); }
 void girarIzquierda(int v) { rampaHacia(-v, v);  }
@@ -226,7 +226,6 @@ void girarDerecha(int v)   { rampaHacia(v,  -v); }
 void detener()             { rampaHacia(0,  0);  }
 
 // Lleva gradualmente ambos motores a las velocidades objetivo (con signo).
-// Si ya estan en el objetivo, retorna al instante (no bloquea en cada ciclo).
 void rampaHacia(int objIzq, int objDer) {
   while (velIzqActual != objIzq || velDerActual != objDer) {
     velIzqActual = acercar(velIzqActual, objIzq, RAMPA_PASO);
@@ -244,8 +243,7 @@ int acercar(int actual, int objetivo, int paso) {
   return actual;
 }
 
-// Aplica una velocidad con signo a un motor: el signo define el sentido,
-// el valor absoluto el PWM (0-255).
+// Mueve un motor: el signo da el sentido, el valor absoluto el PWM (0-255).
 void aplicarMotor(int velSignada, int pinPWM, int pinDir1, int pinDir2) {
   bool haciaAdelante = velSignada >= 0;
   digitalWrite(pinDir1, haciaAdelante ? HIGH : LOW);

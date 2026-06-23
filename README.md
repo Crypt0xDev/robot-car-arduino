@@ -89,129 +89,44 @@ El proyecto implementa una **arquitectura modular y escalable** que separa clara
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Arquitectura
 
-Robot Car Arduino utiliza una **arquitectura modular de 5 capas** para máxima flexibilidad y reutilización:
+El robot corre un **firmware único** (`firmware/robot_car/robot_car.ino`) con una
+máquina de estados simple (`enum` + `switch`) que coordina 4 modos:
 
-<details>
-<summary><b>Estructura de módulos (click para expandir)</b></summary>
+| Modo | Qué hace |
+|------|----------|
+| **Idle** | Detenido |
+| **Manual** | Lo manejas por Bluetooth (F/B/L/R/S, velocidad) |
+| **Evasión** | Esquiva obstáculos solo (HC-SR04 + servo), con distancia de frenado dinámica |
+| **Línea** | Sigue una línea negra (sensores IR, control proporcional) |
 
-```
-📦 Robot Car Arduino
-│
-├── 🧠 Core (Lógica Central)
-│   ├── RobotController      → Coordinador principal
-│   ├── StateMachine         → Gestión de estados
-│   └── EventManager         → Sistema de eventos interno
-│
-├── 🔌 Drivers (Acceso a Hardware)
-│   ├── MotorDriver          → Control de motores DC
-│   ├── UltrasonicDriver     → Sensor de distancia HC-SR04
-│   ├── ServoDriver          → Control de servomotor SG90
-│   └── EncoderDriver        → Lectura de encoders
-│
-├── 🎮 Features (Funcionalidades)
-│   ├── ObstacleAvoidance    → Evasión autónoma de obstáculos
-│   ├── LineFollower         → Seguimiento de línea automático
-│   ├── ManualControl        → Control remoto manual
-│   └── AutonomousMode       → Navegación completamente autónoma
-│
-├── 📡 Communication (Comunicación Externa)
-│   ├── Bluetooth            → Comunicación inalámbrica actual
-│   ├── WiFi (Future)        → Expansión futura con ESP32
-│   └── Telemetry            → Sistema de monitoreo
-│
-└── ⚙️ Config (Configuración)
-    ├── Pin Definitions      → Mapeo de pines
-    ├── System Constants     → Constantes del sistema
-    ├── Sensor Thresholds    → Umbrales de sensores
-    └── Navigation Params    → Parámetros de navegación
-```
+El control es por **Bluetooth (HC-05)** desde una app Android hecha en Flutter
+([repo de la app](https://github.com/Crypt0xDev/robot-car-arduino-app)). El firmware
+responde con mensajes `OK:...` (telemetría) para que la app confirme cada comando.
 
-### 🧠 Core Layer
-
-| Component | Responsibility |
-|-----------|----------------|
-| **RobotController** | Inicializa componentes, coordina ciclo principal |
-| **StateMachine** | Gestiona: Idle, Manual, Obstacle Avoidance, Line Following, Autonomous |
-| **EventManager** | Propaga eventos: ObstacleDetected, LineLost, BluetoothConnected, ModeChanged |
-
-### 🔌 Drivers Layer
-
-Abstracción de hardware con interfaces consistentes:
-
-- **MotorDriver**: Forward, Backward, Left, Right, Stop, Speed Control
-- **UltrasonicDriver**: Medición de distancia, Detección de obstáculos
-- **ServoDriver**: Movimiento angular, Escaneo del entorno
-- **EncoderDriver**: Velocidad, Distancia, Retroalimentación
-
-### 🎮 Features Layer
-
-Comportamientos de alto nivel que utilizan la capa de Drivers:
-
-- **ObstacleAvoidance**: Escaneo frontal → Detección → Selección de ruta
-- **LineFollower**: Lectura IR → Corrección automática de trayectoria
-- **ManualControl**: Movimiento manual, Control de velocidad, Comandos remotos
-- **AutonomousMode**: Navegación automática, Integración de sensores, Toma de decisiones
-
-</details>
+> Cada función se probó por separado en sketches numerados (`01`–`06`) antes de
+> integrarlas; ver [firmware/README.md](firmware/README.md).
 
 ---
 
-## 📁 Repository Structure
+## 📁 Estructura del repositorio
 
 ```
-├── 🧠 Core/                    # Lógica central del robot
-│   ├── RobotController/
-│   ├── StateMachine/
-│   └── EventManager/
-│
-├── 🔌 Drivers/                 # Capa de acceso a hardware
-│   ├── MotorDriver/
-│   ├── UltrasonicDriver/
-│   ├── ServoDriver/
-│   └── EncoderDriver/
-│
-├── 🎮 Features/                # Funcionalidades de alto nivel
-│   ├── ObstacleAvoidance/
-│   ├── LineFollower/
-│   ├── ManualControl/
-│   └── AutonomousMode/
-│
-├── 📡 Communication/           # Sistemas de comunicación
-│   ├── Bluetooth/
-│   ├── Telemetry/
-│   └── WiFi/
-│
-├── ⚙️ Config/                  # Configuración global
-│   ├── PinDefinitions.h
-│   ├── Constants.h
-│   └── Thresholds.h
-│
-├── 📚 docs/                    # Documentación completa
-│   ├── architecture.md         # Detalles de arquitectura
-│   ├── hardware.md             # Especificaciones de hardware
-│   ├── wiring.md               # Diagramas de conexión
-│   ├── testing.md              # Protocolo de testing
-│   ├── structure.md            # Detalles de estructura
-│   └── roadmap.md              # Plan de desarrollo
-│
-├── 🧪 tests/                   # Casos de prueba
-│   └── README.md
-│
-├── 📊 schematics/              # Esquemas eléctricos
-│   └── README.md
-│
-├── 🖼️ assets/                  # Recursos multimedia
-│   ├── images/                 # Fotografías y diagramas
-│   ├── videos/                 # Demostraciones
-│   └── audio/                  # Sonidos y alarmas
-│
-├── 📄 README.md                # Este archivo
-├── 📋 CHANGELOG.md             # Historial de cambios
-├── 🤝 CONTRIBUTING.md          # Guía de contribución
-├── 📜 LICENSE                  # MIT License
-└── .gitignore
+robot-car-arduino/
+├── firmware/                 # Código Arduino (C++)
+│   ├── 01_motor_test/        #   pruebas por componente
+│   ├── 02_ultrasonic_test/
+│   ├── 03_servo_test/
+│   ├── 04_obstacle_avoidance/
+│   ├── 05_bluetooth_control/
+│   ├── 06_line_follower/
+│   └── robot_car/            #   firmware integrado (todos los modos)
+├── docs/                     # hardware, wiring, diagramas, manual, etc.
+├── assets/                   # imágenes
+├── schematics/               # esquemas
+├── tests/                    # (pendiente)
+├── README.md · CHANGELOG.md · CONTRIBUTING.md · LICENSE
 ```
 
 ---
@@ -222,13 +137,15 @@ Documentación completa disponible en el directorio `docs/`:
 
 | Document | Purpose |
 |----------|---------|
-| [**architecture.md**](docs/architecture.md) | 🏗️ Detalles técnicos de la arquitectura y diseño |
-| [**hardware.md**](docs/hardware.md) | ⚙️ Especificaciones de componentes y características |
-| [**wiring.md**](docs/wiring.md) | 🔌 Diagramas de conexión y mapeo de pines |
-| [**testing.md**](docs/testing.md) | 🧪 Protocolo de testing y validación |
-| [**structure.md**](docs/structure.md) | 📁 Guía detallada de la estructura del proyecto |
-| [**roadmap.md**](docs/roadmap.md) | 🗺️ Plan de desarrollo y futuras características |
+| [**hardware.md**](docs/hardware.md) | ⚙️ Componentes y especificaciones |
+| [**manual-cableado.md**](docs/manual-cableado.md) | 🛠️ Instalación del cableado paso a paso |
+| [**wiring.md**](docs/wiring.md) | 🔌 Mapa de pines y conexiones |
+| [**diagramas.md**](docs/diagramas.md) | 🔋 Diagramas de energía, pines y conexiones |
+| [**verificacion.md**](docs/verificacion.md) | ✅ Checklist para verificar el cableado |
+| [**testing.md**](docs/testing.md) | 🧪 Pruebas y calibración |
+| [**roadmap.md**](docs/roadmap.md) | 🗺️ Plan de desarrollo |
 | [**manual-cableado.md**](docs/manual-cableado.md) | 🛠️ Manual de instalación del cableado paso a paso |
+| [**verificacion.md**](docs/verificacion.md) | ✅ Checklist para verificar que todo esté bien conectado |
 | [**diagramas.md**](docs/diagramas.md) | 🔌 Diagramas de energía, pines y tabla de conexiones |
 | [**app-control.md**](docs/app-control.md) | 📱 App de control sin código (MIT App Inventor) |
 | [**app-flutter.md**](docs/app-flutter.md) | 💻 App de control en código (Flutter + VS Code → APK) |

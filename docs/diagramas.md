@@ -70,7 +70,7 @@ Cómo viaja la corriente desde la batería hasta los motores.
 ## Notas
 
 - **Hardware del kit:** Arduino UNO, L298N, HC-SR04, servo SG-90, QTR-8A,
-  HC-05, encoders (sin usar en el firmware actual), 2 motorreductores.
+  HC-05 y 2 motorreductores. (No se usan encoders.)
 - **Componente extra a comprar:** regulador **LM2596** (idealmente el modelo
   con display, para ajustar los 7.5 V sin multímetro).
 - Para un diagrama pictórico imprimible se recomienda

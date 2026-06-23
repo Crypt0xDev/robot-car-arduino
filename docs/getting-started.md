@@ -446,13 +446,12 @@ Edit `Config/Constants.h`:
 
 ## 📚 Next Steps
 
-After successful first test:
+Después de la primera prueba:
 
-1. **Review [architecture.md](architecture.md)** - Understand system design
-2. **Study [hardware.md](hardware.md)** - Learn component details
-3. **Follow [testing.md](testing.md)** - Run comprehensive tests
-4. **Read [structure.md](structure.md)** - Understand code organization
-5. **Implement features** - Add behaviors from [roadmap.md](roadmap.md)
+1. **[manual-cableado.md](manual-cableado.md)** — instalar todo el cableado.
+2. **[diagramas.md](diagramas.md)** — entender energía, pines y conexiones.
+3. **[testing.md](testing.md)** — pruebas y calibración.
+4. **[roadmap.md](roadmap.md)** — qué sigue.
 
 ---
 
@@ -464,10 +463,10 @@ After successful first test:
 - See [testing.md](testing.md) for diagnostics
 - Open [GitHub Issue](../../issues)
 
-**Documentation:**
-- Full [Architecture Guide](architecture.md)
-- [Hardware Specifications](hardware.md)
-- [Testing Procedures](testing.md)
+**Documentación:**
+- [Manual de cableado](manual-cableado.md)
+- [Hardware](hardware.md)
+- [Pruebas](testing.md)
 
 **Community:**
 - Arduino Forum: [https://forum.arduino.cc/](https://forum.arduino.cc/)
