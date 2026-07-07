@@ -3,7 +3,7 @@
 #include <Servo.h>
 #include <SoftwareSerial.h>
 
-// ---- Pines ----
+// Pines
 const int ENA = 5, IN1 = 7, IN2 = 8;
 const int ENB = 6, IN3 = 9, IN4 = 10;
 const int PIN_TRIG = 2, PIN_ECHO = 4;
@@ -12,31 +12,28 @@ const int BT_RX = 11, BT_TX = 12;
 const int NUM_SENSORES = 5;
 const int SENSORES[NUM_SENSORES] = {A0, A1, A2, A3, A4};
 
-// ---- Parametros ----
-// Distancia de frenado dinamica: crece con la velocidad (frena antes si va rapido).
+// Parámetros
 const int DIST_BASE_CM = 18;
 const int DIST_FACTOR = 6;
 const int ANG_DERECHA = 30, ANG_CENTRO = 90, ANG_IZQUIERDA = 150;
 const unsigned long TIMEOUT_US = 25000;
-const int UMBRAL_LINEA = 500;      // CALIBRAR con tu pista
+const int UMBRAL_LINEA = 500;      // calibrar en tu pista
 const int VELOCIDAD_BASE = 130;
 const float KP = 18.0;
 const int SIN_LINEA = 9999;
 
-// Arranque suave: la velocidad sube por escalones en vez de saltar de golpe.
+// Arranque suave
 const int RAMPA_PASO = 8;
 const int RAMPA_MS = 12;
 
-// Failsafe: si en modo manual deja de llegar movimiento, el robot frena solo.
+// Failsafe: en modo manual, sin comandos, frena.
 const unsigned long FAILSAFE_MS = 600;
 unsigned long ultimoComandoMs = 0;
 
-// ---- Estado ----
+// Estado
 enum Modo { IDLE, MANUAL, EVASION, LINEA };
 Modo modo = IDLE;
-int velocidad = 150;  // velocidad actual (manual y evasion); ajustable con +/- y V
-
-// Velocidad con signo aplicada AHORA a cada motor (+ adelante, - atras).
+int velocidad = 150;  // velocidad actual (manual / evasion)
 int velIzqActual = 0;
 int velDerActual = 0;
 
@@ -218,29 +215,18 @@ long medirDistanciaCm() {
   return duracion / 58;
 }
 
-// ---- Movimiento con arranque suave (compartido por todos los modos) ----
-void adelante(int v)       { rampaHacia(v,  v);  }
-void atras(int v)          { rampaHacia(-v, -v); }
-void girarIzquierda(int v) { rampaHacia(-v, v);  }
-void girarDerecha(int v)   { rampaHacia(v,  -v); }
-void detener()             { rampaHacia(0,  0);  }
+// ---- Movimiento directo (más responsivo) ----
+void adelante(int v)       { setVelocidades(v,  v); }
+void atras(int v)          { setVelocidades(-v, -v); }
+void girarIzquierda(int v) { setVelocidades(-v, v);  }
+void girarDerecha(int v)   { setVelocidades(v,  -v); }
+void detener()             { setVelocidades(0,  0);  }
 
-// Lleva gradualmente ambos motores a las velocidades objetivo (con signo).
-void rampaHacia(int objIzq, int objDer) {
-  while (velIzqActual != objIzq || velDerActual != objDer) {
-    velIzqActual = acercar(velIzqActual, objIzq, RAMPA_PASO);
-    velDerActual = acercar(velDerActual, objDer, RAMPA_PASO);
-    aplicarMotor(velIzqActual, ENA, IN1, IN2);
-    aplicarMotor(velDerActual, ENB, IN3, IN4);
-    delay(RAMPA_MS);
-  }
-}
-
-// Acerca 'actual' a 'objetivo' como mucho 'paso' unidades.
-int acercar(int actual, int objetivo, int paso) {
-  if (actual < objetivo) return min(actual + paso, objetivo);
-  if (actual > objetivo) return max(actual - paso, objetivo);
-  return actual;
+void setVelocidades(int izq, int der) {
+  velIzqActual = izq;
+  velDerActual = der;
+  aplicarMotor(velIzqActual, ENA, IN1, IN2);
+  aplicarMotor(velDerActual, ENB, IN3, IN4);
 }
 
 // Mueve un motor: el signo da el sentido, el valor absoluto el PWM (0-255).
